@@ -6,17 +6,14 @@ import os
 st.set_page_config(page_title="La Decisión Final", page_icon="💖")
 
 # Función auxiliar para cargar imágenes de forma segura
-# Esto evita el error rojo gigante si el nombre no coincide exacto
 def cargar_imagen_segura(nombre_archivo):
     try:
-        # Intenta abrir la imagen con el nombre exacto
         img = Image.open(nombre_archivo)
         return img
     except FileNotFoundError:
-        # Si no la encuentra, devuelve None
         return None
 
-# 1. GESTIÓN DEL ESTADO (La "memoria" de la app)
+# 1. GESTIÓN DEL ESTADO
 if 'etapa' not in st.session_state:
     st.session_state.etapa = 'inicio'
 
@@ -39,30 +36,26 @@ elif st.session_state.etapa == 'juego':
     st.write("Elige con sabiduría...")
     
     # DEFINICIÓN DE CANDIDATOS
-    # IMPORTANTE: Los nombres de archivo "foto" deben ser EXACTOS (preferible minúsculas)
+    # Se usa la imagen proporcionada para la opción correcta
     candidatos = [
         {"nombre": "Jumpio", "foto": "jumpio.jpg", "es_correcto": False},
         {"nombre": "Jungkook", "foto": "jungkook.jpg", "es_correcto": False},
-        {"nombre": "Mi Amor (Tú)", "foto": "yo.jpg", "es_correcto": True}, 
+        {"nombre": "Mi Amor (Tú)", "foto": "image_2.png", "es_correcto": True}, 
         {"nombre": "Pedrito Astorga", "foto": "pedrito.jpg", "es_correcto": False},
         {"nombre": "Pangal", "foto": "pangal.jpg", "es_correcto": False}
     ]
 
-    # Crear columnas para las fotos
     cols = st.columns(len(candidatos))
 
     for i, candidato in enumerate(candidatos):
         with cols[i]:
-            # Usamos la función segura para cargar la imagen
             img = cargar_imagen_segura(candidato["foto"])
             
             if img:
                 st.image(img, use_container_width=True)
             else:
-                # Si falla, muestra un recuadro gris con el nombre del archivo que falta
                 st.warning(f"Falta: {candidato['foto']}")
             
-            # Botón de selección
             if st.button(f"Elegir", key=candidato["nombre"]):
                 if candidato["es_correcto"]:
                     st.session_state.etapa = 'ganaste'
@@ -77,12 +70,12 @@ elif st.session_state.etapa == 'ganaste':
     st.title("¡GANASTE! 🎉❤️")
     st.header("Sabía que eras la indicada.")
     
-    # Cargamos tu foto final de forma segura también
-    img_final = cargar_imagen_segura("yo.jpg")
+    # Se carga la imagen del usuario para la pantalla final
+    img_final = cargar_imagen_segura("image_2.png")
     if img_final:
          st.image(img_final, width=300, caption="El verdadero ganador de tu corazón")
     else:
-         st.warning("🙈 (Aquí debería ir mi foto guapo, pero el archivo 'yo.jpg' no se encontró. ¡Revísalo!)")
+         st.warning("🙈 (Aquí debería ir mi foto guapo, pero el archivo no se encontró. ¡Revísalo!)")
 
     st.success("Te amo infinito.")
     
