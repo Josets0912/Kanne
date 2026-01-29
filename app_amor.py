@@ -1,92 +1,86 @@
 import streamlit as st
 from PIL import Image
-import os
 
-# --- CONFIGURACIÓN INICIAL ---
+# --- CONFIGURACIÓN ---
+# Aquí ya puse el nombre exacto de tu archivo
+NOMBRE_TU_FOTO = "mifoto.jpg" 
+
+# --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="La Decisión Final", page_icon="💖")
 
-# Función auxiliar para cargar imágenes de forma segura
-def cargar_imagen_segura(nombre_archivo):
+# Función para cargar imagen sin errores
+def cargar_imagen(nombre_archivo):
     try:
-        img = Image.open(nombre_archivo)
-        return img
+        return Image.open(nombre_archivo)
     except FileNotFoundError:
         return None
 
-# 1. GESTIÓN DEL ESTADO
+# 1. GESTIÓN DE ESTADO (MEMORIA)
 if 'etapa' not in st.session_state:
     st.session_state.etapa = 'inicio'
 
-def reiniciar_juego():
+def reiniciar():
     st.session_state.etapa = 'juego'
 
-# --- ESCENA 1: PANTALLA DE INICIO ---
+# --- ESCENA 1: INICIO ---
 if st.session_state.etapa == 'inicio':
     st.title("💖 Bienvenida al Juego del Amor 💖")
-    st.write("Estás a punto de responder la pregunta más importante de la historia.")
-    st.write("¿Estás lista?")
-    
-    if st.button("JUGAR", type="primary", use_container_width=True):
+    st.write("Estás a punto de responder la pregunta más importante...")
+    if st.button("JUGAR AHORA", type="primary", use_container_width=True):
         st.session_state.etapa = 'juego'
         st.rerun()
 
-# --- ESCENA 2: EL JUEGO (SELECCIÓN) ---
+# --- ESCENA 2: JUEGO ---
 elif st.session_state.etapa == 'juego':
     st.title("¿Quién es el más guapo? 🤔")
-    st.write("Elige con sabiduría...")
     
-    # DEFINICIÓN DE CANDIDATOS
-    # Se usa la imagen proporcionada para la opción correcta
+    # Lista de candidatos
     candidatos = [
-        {"nombre": "Jumpio", "foto": "jumpio.jpg", "es_correcto": False},
-        {"nombre": "Jungkook", "foto": "jungkook.jpg", "es_correcto": False},
-        {"nombre": "Mi Amor (Tú)", "foto": "image_2.png", "es_correcto": True}, 
-        {"nombre": "Pedrito Astorga", "foto": "pedrito.jpg", "es_correcto": False},
-        {"nombre": "Pangal", "foto": "pangal.jpg", "es_correcto": False}
+        {"nombre": "Jumpio", "foto": "jumpio.jpg", "correcto": False},
+        {"nombre": "Jungkook", "foto": "jungkook.jpg", "correcto": False},
+        {"nombre": "Mi Amor (Tú)", "foto": NOMBRE_TU_FOTO, "correcto": True}, # Usa mifoto.jpg
+        {"nombre": "Pedrito Astorga", "foto": "pedrito.jpg", "correcto": False},
+        {"nombre": "Pangal", "foto": "pangal.jpg", "correcto": False}
     ]
 
     cols = st.columns(len(candidatos))
-
-    for i, candidato in enumerate(candidatos):
+    
+    for i, c in enumerate(candidatos):
         with cols[i]:
-            img = cargar_imagen_segura(candidato["foto"])
-            
+            img = cargar_imagen(c["foto"])
             if img:
                 st.image(img, use_container_width=True)
             else:
-                st.warning(f"Falta: {candidato['foto']}")
+                st.warning(f"Falta: {c['foto']}")
             
-            if st.button(f"Elegir", key=candidato["nombre"]):
-                if candidato["es_correcto"]:
+            if st.button("Elegir", key=c["nombre"]):
+                if c["correcto"]:
                     st.session_state.etapa = 'ganaste'
                     st.rerun()
                 else:
                     st.session_state.etapa = 'perdiste'
                     st.rerun()
 
-# --- ESCENA 3: GANASTE (SI TE ELIGE A TI) ---
+# --- ESCENA 3: GANASTE ---
 elif st.session_state.etapa == 'ganaste':
     st.balloons()
     st.title("¡GANASTE! 🎉❤️")
     st.header("Sabía que eras la indicada.")
     
-    # Se carga la imagen del usuario para la pantalla final
-    img_final = cargar_imagen_segura("image_2.png")
+    # Muestra tu foto
+    img_final = cargar_imagen(NOMBRE_TU_FOTO)
     if img_final:
-         st.image(img_final, width=300, caption="El verdadero ganador de tu corazón")
+        st.image(img_final, width=300, caption="El hombre de tu vida")
     else:
-         st.warning("🙈 (Aquí debería ir mi foto guapo, pero el archivo no se encontró. ¡Revísalo!)")
-
+        st.error(f"No encuentro la foto: {NOMBRE_TU_FOTO}")
+        
     st.success("Te amo infinito.")
-    
-    if st.button("Jugar de nuevo"):
+    if st.button("Reiniciar"):
         st.session_state.etapa = 'inicio'
         st.rerun()
 
-# --- ESCENA 4: PERDISTE (SI ELIGE A OTRO) ---
+# --- ESCENA 4: PERDISTE ---
 elif st.session_state.etapa == 'perdiste':
     st.title("Tienes muy mal gusto... 🤮")
-    st.header("¡¿En serio?!")
-    st.error("Tu elección ha sido incorrecta. Vuelve a intentarlo hasta que elijas bien.")
-    
-    st.button("Intentar de nuevo (y elegir bien esta vez)", on_click=reiniciar_juego)
+    st.error("Respuesta incorrecta. Vuelve a intentarlo.")
+    st.button("Intentar de nuevo", on_click=reiniciar)
